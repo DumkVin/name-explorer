@@ -1,9 +1,11 @@
 import { useState } from "react";
+import axios from "axios";
 import { NameSearch } from "@/components/NameSearch";
 import { UniquenessScore } from "@/components/UniquenessScore";
 import { CultureCard } from "@/components/CultureCard";
 import { CountryList } from "@/components/CountryList";
 import { GenderDistribution } from "@/components/GenderDistribution";
+import { useToast } from "@/hooks/use-toast";
 import heroGlobe from "@/assets/hero-globe.jpg";
 
 // Mock data - will be replaced with real API later
@@ -63,26 +65,44 @@ const Index = () => {
   const [searchResult, setSearchResult] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchedName, setSearchedName] = useState("");
+  const { toast } = useToast();
 
   const handleSearch = async (name: string) => {
     setIsLoading(true);
     setSearchedName(name);
     
-    // Simulate API call
-    setTimeout(() => {
-      const result = mockData[name.toLowerCase()] || {
-        uniquenessScore: Math.floor(Math.random() * 40) + 30,
-        cultures: [
-          { region: "Various", meaning: "Meanings vary by region", popularity: "medium" as const },
-        ],
-        countries: [
-          { name: "Global", percentage: 100, flag: "🌍" },
-        ],
-        gender: { male: 50, female: 50, neutral: 0 },
-      };
-      setSearchResult(result);
+    try {
+      // Send webhook request
+      const websiteUrl = window.location.href;
+      await axios.post(
+        "https://vinmkn8n3.app.n8n.cloud/webhook-test/Website_name_for_name_meaning",
+        { website: websiteUrl, name: name }
+      );
+
+      // Simulate API call for now (this will be replaced with actual AI response)
+      setTimeout(() => {
+        const result = mockData[name.toLowerCase()] || {
+          uniquenessScore: Math.floor(Math.random() * 40) + 30,
+          cultures: [
+            { region: "Various", meaning: "Meanings vary by region", popularity: "medium" as const },
+          ],
+          countries: [
+            { name: "Global", percentage: 100, flag: "🌍" },
+          ],
+          gender: { male: 50, female: 50, neutral: 0 },
+        };
+        setSearchResult(result);
+        setIsLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Error sending webhook:", error);
+      toast({
+        title: "Error",
+        description: "Failed to process your request. Please try again.",
+        variant: "destructive",
+      });
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (

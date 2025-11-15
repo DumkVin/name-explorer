@@ -72,28 +72,17 @@ const Index = () => {
     setSearchedName(name);
     
     try {
-      // Send webhook request
+      // Send webhook request and capture response
       const websiteUrl = window.location.href;
-      await axios.post(
+      const response = await axios.post(
         "https://vinmkn8n3.app.n8n.cloud/webhook-test/Website_name_for_name_meaning",
         { website: websiteUrl, name: name }
       );
 
-      // Simulate API call for now (this will be replaced with actual AI response)
-      setTimeout(() => {
-        const result = mockData[name.toLowerCase()] || {
-          uniquenessScore: Math.floor(Math.random() * 40) + 30,
-          cultures: [
-            { region: "Various", meaning: "Meanings vary by region", popularity: "medium" as const },
-          ],
-          countries: [
-            { name: "Global", percentage: 100, flag: "🌍" },
-          ],
-          gender: { male: 50, female: 50, neutral: 0 },
-        };
-        setSearchResult(result);
-        setIsLoading(false);
-      }, 1000);
+      // Use the actual response from n8n
+      console.log("N8N Response:", response.data);
+      setSearchResult(response.data);
+      setIsLoading(false);
     } catch (error) {
       console.error("Error sending webhook:", error);
       toast({
@@ -143,40 +132,16 @@ const Index = () => {
       {/* Results Section */}
       {searchResult && (
         <section className="container mx-auto px-4 pb-20">
-          <div className="max-w-6xl mx-auto space-y-8">
-            {/* Name Title */}
-            <div className="text-center">
-              <h2 className="text-4xl md:text-5xl font-bold capitalize text-foreground">
-                {searchedName}
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-card rounded-lg p-8 shadow-sm">
+              <h2 className="text-3xl font-bold text-foreground mb-6">
+                Analysis for "{searchedName}"
               </h2>
-            </div>
-
-            {/* Uniqueness Score */}
-            <UniquenessScore score={searchResult.uniquenessScore} />
-
-            {/* Cultural Origins */}
-            <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-foreground">Cultural Origins & Meanings</h3>
-              <div className="grid gap-4 md:grid-cols-2">
-                {searchResult.cultures.map((culture: any, index: number) => (
-                  <CultureCard
-                    key={index}
-                    region={culture.region}
-                    meaning={culture.meaning}
-                    popularity={culture.popularity}
-                  />
-                ))}
+              <div className="whitespace-pre-wrap text-foreground leading-relaxed text-base font-mono bg-muted/50 p-6 rounded">
+                {typeof searchResult === 'string' 
+                  ? searchResult 
+                  : JSON.stringify(searchResult, null, 2)}
               </div>
-            </div>
-
-            {/* Statistics Grid */}
-            <div className="grid gap-6 md:grid-cols-2">
-              <CountryList countries={searchResult.countries} />
-              <GenderDistribution
-                male={searchResult.gender.male}
-                female={searchResult.gender.female}
-                neutral={searchResult.gender.neutral}
-              />
             </div>
           </div>
         </section>
